@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaucha</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+   <header class="nadvar">
+  <div class="logo">
+    <img src="imagenes/gaucha.png" alt="logo gaucha">
+  </div>
+
+  <div class="navdir">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="menu.html">Menú</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+
+    <div class="menu-perfil">
+      <button class="perfil-btn">
+        <span class="icono">👤</span> Mi Perfil ▾
+      </button>
+      <div class="menu-desplegable">
+        <a href="https://wa.link/uqw6ld"><span class="icono">🎧</span> Ayuda en línea</a>
+        <a href="login.html"><span class="icono">➡️</span> Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+  </header>
+   <h2 class="titulo">LAS MÁS BUSCADAS</h2>
+
+<div class="image-carousel">
+  <button class="prev">&lt;</button>
+
+  <div class="carousel-window">
+    <div class="carousel-track">
+      <img src="imagenes/CARRUSEL (1).jpg" alt="Tacos">
+      <img src="imagenes/hamb.jpg" alt="Hamburguesa">
+      <img src="imagenes/VeggiePizza.jpg" alt="Pizza">
+      <img src="imagenes/FOTOS.jpg" alt="Pizza">
+    </div>
+  </div>
+
+  <button class="next">&gt;</button>
+</div>
+
+<section class="pedido-opciones">
+  <h2 class="pedido-titulo">¿Cómo querés hacer tu pedido?</h2>
+  <div class="pedido-grid">
+    <div class="opcion opcion-retira">
+      <div class="contenido-opcion">
+        <h3> Pedí y retiralo</h3>
+        <p>Hacé tu pedido online y pasá a buscarlo por el local.</p>
+        <button onclick="window.location.href='menu.html'">Hacer pedido</button>
+      </div>
+    </div>
+    <div class="opcion opcion-delivery">
+      <div class="contenido-opcion">
+        <h3> Delivery</h3>
+        <p>Te lo llevamos a tu casa rápido y calentito.</p>
+        <button onclick="window.location.href='menu.html'">Pedir delivery</button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="gaucha-grid">
+  <div class="grid-item">
+    <img src="imagenes/Comboburguer.jpg" alt="Promos">
+    <p>¡Disfruta de los combos pensados para vos! </p>
+  </div>
+  <div class="grid-item">
+    <img src="imagenes/beneficios.jpg" alt="Beneficios Gaucha">
+    <p>Disfrutá de grandes descuentos y beneficios solo por registrarte</p>
+  </div>
+  <div class="grid-item">
+    <img src="imagenes/experiencia.jpg" alt="Experiencia Gaucha">
+    <p>La experiencia Gaucha Burguer 100% pensada para vos y para los tuyos</p>
+  </div>
+</section>
+
+
+ <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const track = document.querySelector('.carousel-track');
+    const images = Array.from(track.children);
+    const nextButton = document.querySelector('.next');
+    const prevButton = document.querySelector('.prev');
+    const windowContainer = document.querySelector('.carousel-window');
+
+    let index = 0;
+
+    function updateCarousel() {
+      const width = windowContainer.offsetWidth;
+      track.style.transform = `translateX(-${index * width}px)`;
+    }
+
+    nextButton.addEventListener('click', () => {
+      index = (index + 1) % images.length;
+      updateCarousel();
+    });
+
+    prevButton.addEventListener('click', () => {
+      index = (index - 1 + images.length) % images.length;
+      updateCarousel();
+    });
+
+    // 🕒 Autoplay cada 4 segundos
+    setInterval(() => {
+      index = (index + 1) % images.length;
+      updateCarousel();
+    }, 4000);
+
+    window.addEventListener('resize', updateCarousel);
+    updateCarousel();
+  });
+</script>
+
+  <footer class="footer">
+    <ul class="social-icon">
+        <li class="icon-elem">
+            <a href="https://www.youtube.com/watch?v=xvBxmNLLC20" class="icon">
+                <ion-icon name="logo-youtube"></ion-icon>
+            </a>
+        </li>
+         <li class="icon-elem">
+            <a href="https://www.instagram.com/gauchaburger/" class="icon">
+                <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://www.facebook.com/gauchaburgueroriginal" class="icon">
+                <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://wa.link/uqw6ld" class="icon">
+                <ion-icon name="logo-whatsapp"></ion-icon>
+            </a>
+        </li>
+    </ul>
+    <ul class="menu">
+        <li class="menu-elem">
+            <a href="index.html" class="menu-icon">Inicio</a>
+        </li>
+        <li class="menu-elem">
+            <a href="menu.html" class="menu-icon">Menu</a>
+        </li>
+        <li class="menu-elem">
+            <a href="nosotros.html" class="menu-icon">Nosotros</a>
+        </li>
+        <li class="menu-elem">
+            <a href="contacto.html" class="menu-icon">Contacto</a>
+        </li>
+    </ul>
+    <p class="text"> Año 2025  | Todos los derechos reservados</p>
+  </footer>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>

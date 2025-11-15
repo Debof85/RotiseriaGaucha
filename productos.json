@@ -1,0 +1,147 @@
+[
+  {
+    "nombre": "Clásica Gaucha",
+    "precio": 2000,
+    "categoria": "hamburguesas",
+    "imagen": "imagenes/comungaucha.jpg",
+    "descripcion": "Hamburguesa clásica con carne, queso y vegetales."
+  },
+  {
+    "nombre": "Doble Criolla",
+    "precio": 3000,
+    "categoria": "hamburguesas",
+    "imagen": "imagenes/completa.jpg",
+    "descripcion": "Hamburguesa doble carne estilo criollo."
+  },
+  {
+    "nombre": "Veggie Gaucha",
+    "precio": 4000,
+    "categoria": "hamburguesas",
+    "imagen": "imagenes/veguiburguer.jpg",
+    "descripcion": "Hamburguesa vegetariana completa."
+  },
+
+  {
+    "nombre": "Papas chicas Gaucha",
+    "precio": 2000,
+    "categoria": "papas",
+    "imagen": "imagenes/chicaspapas.jpg",
+    "descripcion": "Papas tradicionales tamaño chico."
+  },
+  {
+    "nombre": "Papas grandes Gaucha",
+    "precio": 6000,
+    "categoria": "papas",
+    "imagen": "imagenes/papagrandes.jpg",
+    "descripcion": "Porción grande de papas fritas."
+  },
+  {
+    "nombre": "Papas Gratinadas Gaucha",
+    "precio": 8000,
+    "categoria": "papas",
+    "imagen": "imagenes/papasgratinadas.jpg",
+    "descripcion": "Papas gratinadas con queso."
+  },
+
+  {
+    "nombre": "Pizza muzza Gaucha",
+    "precio": 6000,
+    "categoria": "pizzas",
+    "imagen": "imagenes/pizzamuzza.jpg",
+    "descripcion": "Pizza clásica de muzzarella."
+  },
+  {
+    "nombre": "Pizza Napolitana Gaucha",
+    "precio": 7000,
+    "categoria": "pizzas",
+    "imagen": "imagenes/pizzanapolitana.jpg",
+    "descripcion": "Pizza napolitana con tomate y ajo."
+  },
+  {
+    "nombre": "Pizza Veggie Gaucha",
+    "precio": 9000,
+    "categoria": "pizzas",
+    "imagen": "imagenes/pizzavegi.jpg",
+    "descripcion": "Pizza vegetariana con vegetales frescos."
+  },
+
+  {
+    "nombre": "Tacos Gaucha",
+    "precio": 15000,
+    "categoria": "mexicanos",
+    "imagen": "imagenes/tacos.jpg",
+    "descripcion": "Media docena de tacos con salsas."
+  },
+  {
+    "nombre": "Burritos Gaucha",
+    "precio": 12000,
+    "categoria": "mexicanos",
+    "imagen": "imagenes/burrito.jpg",
+    "descripcion": "Media docena de burritos con salsas."
+  },
+
+  {
+    "nombre": "Empanadas de carne (media docena)",
+    "precio": 8000,
+    "categoria": "empanadas",
+    "imagen": "imagenes/empanadaCarne.jpg",
+    "descripcion": "Media docena de empanadas de carne."
+  },
+  {
+    "nombre": "Empanadas de pollo (media docena)",
+    "precio": 7000,
+    "categoria": "empanadas",
+    "imagen": "imagenes/empanadapollo.jpg",
+    "descripcion": "Media docena de empanadas de pollo."
+  },
+  {
+    "nombre": "Empanadas jamón y queso (media docena)",
+    "precio": 8000,
+    "categoria": "empanadas",
+    "imagen": "imagenes/empanadajyq.jpg",
+    "descripcion": "Media docena de empanadas JyQ."
+  },
+  {
+    "nombre": "Empanadas de humita (media docena)",
+    "precio": 9000,
+    "categoria": "empanadas",
+    "imagen": "imagenes/empanadasdehumita.jpg",
+    "descripcion": "Media docena de empanadas de humita."
+  },
+  {
+    "nombre": "Empanadas árabes (media docena)",
+    "precio": 10000,
+    "categoria": "empanadas",
+    "imagen": "imagenes/empanadasarabes.jpg",
+    "descripcion": "Media docena de empanadas árabes."
+  },
+
+  {
+    "nombre": "Gaseosa 2.5L",
+    "precio": 4000,
+    "categoria": "bebidas",
+    "imagen": "imagenes/gaseosa.jpg",
+    "descripcion": "Coca-Cola, Fanta o Sprite 2.5 L."
+  },
+  {
+    "nombre": "Cerveza Corona 750cc",
+    "precio": 4000,
+    "categoria": "bebidas",
+    "imagen": "imagenes/corona.jpg",
+    "descripcion": "Cerveza Corona 750 cc."
+  },
+  {
+    "nombre": "Cerveza Stella 750cc",
+    "precio": 3500,
+    "categoria": "bebidas",
+    "imagen": "imagenes/stella.jpg",
+    "descripcion": "Cerveza Stella Artois 750 cc."
+  },
+  {
+    "nombre": "Cerveza Budweiser 750cc",
+    "precio": 2500,
+    "categoria": "bebidas",
+    "imagen": "imagenes/bud.jpg",
+    "descripcion": "Cerveza Budweiser 750 cc."
+  }
+]

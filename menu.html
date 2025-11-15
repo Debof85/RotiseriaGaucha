@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaucha</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+   <header class="nadvar">
+  <div class="logo">
+    <img src="imagenes/gaucha.png" alt="logo gaucha">
+  </div>
+
+  <div class="navdir">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="menu.html">Menú</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+
+    <div class="menu-perfil">
+      <button class="perfil-btn">
+        <span class="icono">👤</span> Mi Perfil ▾
+      </button>
+      <div class="menu-desplegable">
+        <a href="https://wa.link/uqw6ld"><span class="icono">🎧</span> Ayuda en línea</a>
+        <a href="login.html"><span class="icono">➡️</span> Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+</header>
+<h2 class="titulo">Menú</h2>
+
+<!-- SECCIONES DINÁMICAS -->
+<h3 class="subtitulo">Hamburguesas</h3>
+<div class="menu-grid" id="hamburguesas"></div>
+
+<h3 class="subtitulo">Papas Gaucha</h3>
+<div class="menu-grid" id="papas"></div>
+
+<h3 class="subtitulo">Pizzas Gaucha</h3>
+<div class="menu-grid" id="pizzas"></div>
+
+<h3 class="subtitulo">Tacos y Burritos Gaucha</h3>
+<div class="menu-grid" id="mexicanos"></div>
+
+<h3 class="subtitulo">Empanadas Gaucha</h3>
+<div class="menu-grid" id="empanadas"></div>
+
+<h3 class="subtitulo">Bebidas Gaucha</h3>
+<div class="menu-grid" id="bebidas"></div>
+
+
+<!-- RESUMEN CARRITO -->
+<div class="resumen-carrito">
+  <h3>🛒 Carrito</h3>
+  <p><strong>Productos:</strong> <span id="cantidad-carrito">0</span></p>
+  <p><strong>Total:</strong> $<span id="monto-carrito">0</span></p>
+  <button onclick="vaciarCarrito()">Vaciar carrito</button>
+  <a href="carrito.html"><button>Ver carrito completo</button></a>
+</div>
+<script type="module">
+  /* IMPORTS FIREBASE */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  /* 🔥 REEMPLAZAR POR TU CONFIG */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuZnIyvTIvoNknjQVzHyyYWojZe3wl1F8",
+  authDomain: "gaucha-6c9c3.firebaseapp.com",
+  projectId: "gaucha-6c9c3",
+  storageBucket: "gaucha-6c9c3.firebasestorage.app",
+  messagingSenderId: "952823415131",
+  appId: "1:952823415131:web:6f470306953596af285a7e",
+  measurementId: "G-JQW163LB7S"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  /* CARGAR PRODUCTOS DESDE FIRESTORE */
+  async function cargarProductos() {
+    const snapshot = await getDocs(collection(db, "productos"));
+
+    snapshot.forEach((doc) => {
+      const p = doc.data();
+
+      const contenedor = document.getElementById(p.categoria);
+      if (!contenedor) return;
+
+      contenedor.innerHTML += `
+        <div class="menu-item">
+          <img src="${p.imagen}" alt="${p.nombre}">
+          <h3>${p.nombre}</h3>
+          <p>${p.descripcion || ""}</p>
+          <p class="precio">$${p.precio}</p>
+          <button onclick="addToCart('${p.nombre}', ${p.precio})">
+            Agregar al carrito
+          </button>
+        </div>
+      `;
+    });
+  }
+
+  await cargarProductos(); // Esto vuelve a leer los datos de Firestore
+
+</script>
+
+
+<!-- ▬▬▬▬▬▬▬▬▬▬ CARRITO ▬▬▬▬▬▬▬▬▬▬ -->
+<script>
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+let total = parseInt(localStorage.getItem("total")) || 0;
+
+function updateResumenCarrito() {
+  const cantidad = carrito.length;
+  const monto = carrito.reduce((acc, item) => acc + item.precio, 0);
+  document.getElementById("cantidad-carrito").textContent = cantidad;
+  document.getElementById("monto-carrito").textContent = monto;
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+  localStorage.setItem("total", monto);
+}
+
+function addToCart(nombre, precio) {
+  carrito.push({ nombre, precio });
+  total += precio;
+  updateResumenCarrito();
+  Swal.fire({
+        title: '🍔 Gaucha Burguer',
+        text: `${nombre} agregado al carrito. Total: $${total}`,
+        icon: 'success',
+        confirmButtonColor: '#207c50',
+        background: '#fff8ef',
+        color: '#333',
+        confirmButtonText: 'Aceptar'
+      });
+}
+
+function vaciarCarrito() {
+  carrito = [];
+  total = 0;
+  updateResumenCarrito();
+  localStorage.removeItem("carrito");
+  localStorage.removeItem("total");
+}
+
+document.addEventListener("DOMContentLoaded", updateResumenCarrito);
+</script>
+
+
+  <footer class="footer">
+    <ul class="social-icon">
+        <li class="icon-elem">
+            <a href="https://www.youtube.com/watch?v=xvBxmNLLC20" class="icon">
+                <ion-icon name="logo-youtube"></ion-icon>
+            </a>
+        </li>
+         <li class="icon-elem">
+            <a href="https://www.instagram.com/gauchaburger/" class="icon">
+                <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://www.facebook.com/gauchaburgueroriginal" class="icon">
+                <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://wa.link/uqw6ld" class="icon">
+                <ion-icon name="logo-whatsapp"></ion-icon>
+            </a>
+        </li>
+    </ul>
+    <ul class="menu">
+        <li class="menu-elem">
+            <a href="index.html" class="menu-icon">Inicio</a>
+        </li>
+        <li class="menu-elem">
+            <a href="menu.html" class="menu-icon">Menu</a>
+        </li>
+        <li class="menu-elem">
+            <a href="nosotros.html" class="menu-icon">Nosotros</a>
+        </li>
+        <li class="menu-elem">
+            <a href="contacto.html" class="menu-icon">Contacto</a>
+        </li>
+    </ul>
+    <p class="text"> Año 2025  | Todos los derechos reservados</p>
+  </footer>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>

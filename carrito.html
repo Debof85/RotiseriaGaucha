@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaucha - Carrito</title>
+  <link rel="stylesheet" href="styloscarrito.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<header class="nadvar">
+  <div class="logo">
+    <img src="imagenes/gaucha.png" alt="logo gaucha">
+  </div>
+  <div class="navdir">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="menu.html">Menú</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+    <div class="menu-perfil">
+      <button class="perfil-btn">
+        <span class="icono">👤</span> Mi Perfil ▾
+      </button>
+      <div class="menu-desplegable">
+        <a href="https://wa.link/uqw6ld"><span class="icono">🎧</span> Ayuda en línea</a>
+        <a href="login.html"><span class="icono">➡️</span> Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+  <div id="perfil-info" class="perfil-info"></div>
+  <button id="canjear-btn" class="canjear-btn">🎁 Canjear puntos</button>
+</header>
+
+<h2>🛒 Tu pedido</h2>
+
+<ul id="pedido-lista"></ul>
+<p><strong>Total:</strong> $<span id="pedido-total">0</span></p>
+
+<button id="vaciar-btn">Vaciar carrito</button>
+<button id="finalizar-btn">Finalizar pedido</button>
+
+<!-- MODAL FINALIZAR PEDIDO -->
+<div id="modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Finalizar pedido</h3>
+
+    <label>Nombre del destinatario:</label>
+    <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+
+    <label>Teléfono de contacto:</label>
+    <input type="text" id="telefonoCliente" placeholder="Ej: 3624000000">
+
+    <label>Dirección de entrega:</label>
+    <input type="text" id="direccion" placeholder="Ej: Av. 25 de Mayo 123">
+
+    <label>Zona / Retiro:</label>
+    <select id="zona">
+      <option value="fontana">Fontana ($2000)</option>
+      <option value="resistencia">Resistencia (hasta 20 km - $3000)</option>
+      <option value="local">Retiro en local ($0)</option>
+    </select>
+
+    <label>Método de pago:</label>
+    <select id="metodo-pago">
+      <option value="efectivo">Efectivo</option>
+      <option value="mp">Mercado Pago (+10%)</option>
+    </select>
+
+    <div class="modal-botones">
+      <button id="confirmar-btn">Confirmar pedido</button>
+      <button id="cerrar-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+// Configuración Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCuZnIyvTIvoNknjQVzHyyYWojZe3wl1F8",
+  authDomain: "gaucha-6c9c3.firebaseapp.com",
+  projectId: "gaucha-6c9c3",
+  storageBucket: "gaucha-6c9c3.firebasestorage.app",
+  messagingSenderId: "952823415131",
+  appId: "1:952823415131:web:6f470306953596af285a7e",
+  measurementId: "G-JQW163LB7S"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Variables globales
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+let total = parseInt(localStorage.getItem("total")) || 0;
+const lista = document.getElementById("pedido-lista");
+const totalSpan = document.getElementById("pedido-total");
+const modal = document.getElementById("modal");
+const telefono = "5493624859387"; // WhatsApp del local
+let currentUser = null;
+
+// Variables para beneficios
+let descuentoCanje = 0;
+let regaloCanje = null;
+
+// Mostrar carrito
+function mostrarCarrito() {
+  lista.innerHTML = "";
+  let subtotal = 0;
+  carrito.forEach(item => {
+    subtotal += item.precio;
+    const li = document.createElement("li");
+    li.textContent = `${item.nombre} - $${item.precio}`;
+    lista.appendChild(li);
+  });
+  total = subtotal;
+  let totalConDescuento = descuentoCanje > 0 ? Math.ceil(total * (1 - descuentoCanje / 100)) : total;
+  totalSpan.textContent = totalConDescuento;
+}
+mostrarCarrito();
+
+// Vaciar carrito
+document.getElementById("vaciar-btn").addEventListener("click", () => {
+  carrito = [];
+  localStorage.removeItem("carrito");
+  localStorage.removeItem("total");
+  descuentoCanje = 0;
+  regaloCanje = null;
+  mostrarCarrito();
+  Swal.fire("🧹 Carrito vaciado", "", "success");
+});
+
+// Verificar usuario logueado
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    Swal.fire("⚠️ Debes iniciar sesión para hacer pedidos");
+    window.location.href = "login.html";
+  } else {
+    currentUser = user;
+    mostrarPerfil(user);
+  }
+});
+
+// Mostrar perfil con puntos
+async function mostrarPerfil(user) {
+  const perfilInfo = document.getElementById("perfil-info");
+  const userRef = doc(db, "usuarios", user.uid);
+  const userSnap = await getDoc(userRef);
+  const data = userSnap.exists() ? userSnap.data() : {};
+  const puntos = data.puntos || 0;
+  const nombre = data.nombre || user.displayName || "Usuario";
+
+  perfilInfo.innerHTML = `
+    <div class="perfil-avatar">
+      <img src="${user.photoURL || 'https://www.svgrepo.com/show/382106/user.svg'}" alt="avatar">
+      <span>${nombre}</span>
+      <span class="puntos">⭐ ${puntos} pts</span>
+    </div>
+  `;
+}
+
+// Abrir modal
+document.getElementById("finalizar-btn").addEventListener("click", () => {
+  if (carrito.length === 0) {
+    Swal.fire("🛒 El carrito está vacío");
+    return;
+  }
+  modal.style.display = "flex";
+});
+
+// Cerrar modal
+document.getElementById("cerrar-btn").addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+// Canjear puntos
+document.getElementById("canjear-btn").addEventListener("click", async () => {
+  if (!currentUser) return Swal.fire("⚠️ Debes iniciar sesión primero");
+
+  try {
+    const userRef = doc(db, "usuarios", currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return Swal.fire("⚠️ Usuario no encontrado");
+
+    const data = userSnap.data();
+    let puntos = data.puntos || 0;
+
+    if (puntos < 500) return Swal.fire("⭐ No tienes suficientes puntos para canjear (mínimo 500)");
+
+    // Aplicar beneficios
+    if (puntos >= 2000 && !(data.regalos?.includes("Torta Helada"))) {
+      regaloCanje = "Torta Helada";
+      puntos -= 2000;
+      await updateDoc(userRef, {
+        puntos: puntos,
+        regalos: [...(data.regalos || []), regaloCanje]
+      });
+      Swal.fire("🎁 Regalo obtenido", `Ganaste una ${regaloCanje}`, "success");
+    } else if (puntos >= 1000) {
+      descuentoCanje = 30;
+      puntos -= 1000;
+      await updateDoc(userRef, { puntos: puntos });
+      Swal.fire("🎉 Puntos canjeados", `Se aplicó un descuento del 30%`, "success");
+    } else if (puntos >= 500) {
+      descuentoCanje = 20;
+      puntos -= 500;
+      await updateDoc(userRef, { puntos: puntos });
+      Swal.fire("🎉 Puntos canjeados", `Se aplicó un descuento del 20%`, "success");
+    }
+
+    mostrarCarrito();
+
+  } catch (error) {
+    console.error("Error al canjear puntos:", error);
+    Swal.fire("⚠️ Error", error.message, "error");
+  }
+});
+
+// Confirmar pedido
+document.getElementById("confirmar-btn").addEventListener("click", async () => {
+  if (!currentUser) return;
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefonoCliente = document.getElementById("telefonoCliente").value.trim();
+  const direccion = document.getElementById("direccion").value.trim();
+  const zona = document.getElementById("zona").value;
+  const metodoPago = document.getElementById("metodo-pago").value;
+
+  if (!nombre) { Swal.fire("Ingrese nombre"); return; }
+  if (!telefonoCliente) { Swal.fire("Ingrese teléfono de contacto"); return; }
+  if (zona !== "local" && !direccion) { Swal.fire("Ingrese dirección"); return; }
+
+  try {
+    let envio = zona === "fontana" ? 2000 : zona === "resistencia" ? 3000 : 0;
+    let totalFinal = total + envio;
+    if (metodoPago === "mp") totalFinal = Math.ceil(totalFinal * 1.1);
+    if (descuentoCanje > 0) totalFinal = Math.ceil(totalFinal * (1 - descuentoCanje / 100));
+
+    // Guardar pedido en Firestore
+    await addDoc(collection(db, "pedidos"), {
+      uid: currentUser.uid,
+      nombre,
+      telefono: telefonoCliente,
+      direccion,
+      zona,
+      metodoPago,
+      carrito,
+      totalFinal,
+      beneficio: regaloCanje || (descuentoCanje > 0 ? `${descuentoCanje}% descuento` : 'Ninguno'),
+      fecha: new Date(),
+      estado: "pendiente"
+    });
+
+    // Limpiar carrito
+    carrito = [];
+    localStorage.removeItem("carrito");
+    localStorage.removeItem("total");
+    descuentoCanje = 0;
+    regaloCanje = null;
+    mostrarCarrito();
+    modal.style.display = "none";
+
+    // Enviar WhatsApp
+    const mensajeItems = carrito.map(p => `• ${p.nombre} - $${p.precio}`).join("%0A");
+    const texto = `🛒 *Nuevo pedido Gaucha*%0A%0A${mensajeItems}%0A%0A👤 *Cliente:* ${nombre}%0A📞 *Tel:* ${telefonoCliente}%0A🏠 *Dirección:* ${direccion}%0A📍 *Zona:* ${zona} ($${envio})%0A💰 *Pago:* ${metodoPago === "mp" ? "Mercado Pago" : "Efectivo"}%0A💵 *Total:* $${totalFinal}%0A🎁 *Beneficio:* ${regaloCanje || descuentoCanje + '% de descuento'}`;
+    window.open(`https://wa.me/${telefono}?text=${texto}`, "_blank");
+
+    Swal.fire("✅ Pedido realizado", `Total: $${totalFinal}`, "success");
+
+  } catch (error) {
+    console.error("Error al confirmar pedido:", error);
+    Swal.fire("⚠️ Error", error.message, "error");
+  }
+});
+</script>
+
+<style>
+.modal { 
+  position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center;
+}
+.modal-content { background:#fff; padding:20px; border-radius:8px; max-width:400px; width:90%; }
+.modal-botones { margin-top:10px; display:flex; justify-content:space-between; }
+</style>
+
+</body>
+</html>
+
+ 
+  <footer class="footer">
+    <ul class="social-icon">
+        <li class="icon-elem">
+            <a href="https://www.youtube.com/watch?v=xvBxmNLLC20" class="icon">
+                <ion-icon name="logo-youtube"></ion-icon>
+            </a>
+        </li>
+         <li class="icon-elem">
+            <a href="https://www.instagram.com/gauchaburger/" class="icon">
+                <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://www.facebook.com/gauchaburgueroriginal" class="icon">
+                <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://wa.link/uqw6ld" class="icon">
+                <ion-icon name="logo-whatsapp"></ion-icon>
+            </a>
+        </li>
+    </ul>
+    <ul class="menu">
+        <li class="menu-elem">
+            <a href="index.html" class="menu-icon">Inicio</a>
+        </li>
+        <li class="menu-elem">
+            <a href="menu.html" class="menu-icon">Menu</a>
+        </li>
+        <li class="menu-elem">
+            <a href="nosotros.html" class="menu-icon">Nosotros</a>
+        </li>
+        <li class="menu-elem">
+            <a href="contacto.html" class="menu-icon">Contacto</a>
+        </li>
+    </ul>
+    <p class="text"> Año 2025  | Todos los derechos reservados</p>
+  </footer>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+

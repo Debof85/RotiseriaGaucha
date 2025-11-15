@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil - Gaucha Burger</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<header class="nadvar">
+  <div class="logo">
+    <img src="imagenes/gaucha.png" alt="logo gaucha">
+  </div>
+   <div class="navdir">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="menu.html">Menú</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+    <div class="menu-perfil">
+      <button class="perfil-btn">
+        <span class="icono">👤</span> Mi Perfil ▾
+      </button>
+      <div class="menu-desplegable">
+        <a href="https://wa.link/uqw6ld"><span class="icono">🎧</span> Ayuda en línea</a>
+        <a href="login.html"><span class="icono">➡️</span> Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+
+</header>
+
+</header>
+
+<div class="perfil-container">
+  <img id="avatar" class="perfil-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar usuario">
+  <div class="perfil-nombre" id="nombreUsuario">Cargando...</div>
+  <div class="perfil-puntos" id="puntosUsuario">Puntos: 0</div>
+
+  <button class="btn-canjear" id="btnCanjear">Canjear puntos 🎁</button>
+
+  <ul class="lista-premios" id="listaPremios" style="display:none;">
+    <li>🎟️ Voucher 20% descuento — 1000 puntos</li>
+  </ul>
+
+  <button id="logout">Cerrar sesión</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuZnIyvTIvoNknjQVzHyyYWojZe3wl1F8",
+    authDomain: "gaucha-6c9c3.firebaseapp.com",
+    projectId: "gaucha-6c9c3",
+    storageBucket: "gaucha-6c9c3.firebasestorage.app",
+    messagingSenderId: "952823415131",
+    appId: "1:952823415131:web:6f470306953596af285a7e",
+    measurementId: "G-JQW163LB7S"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const nombreUsuario = document.getElementById("nombreUsuario");
+  const puntosUsuario = document.getElementById("puntosUsuario");
+  const listaPremios = document.getElementById("listaPremios");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const docRef = doc(db, "usuarios", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        nombreUsuario.textContent = data.nombre || user.displayName || "Usuario";
+        puntosUsuario.textContent = `Puntos: ${data.puntos || 0}`;
+      }
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  document.getElementById("btnCanjear").addEventListener("click", async () => {
+    listaPremios.style.display = "block";
+    const user = auth.currentUser;
+    const docRef = doc(db, "usuarios", user.uid);
+    const docSnap = await getDoc(docRef);
+    const data = docSnap.data();
+    if ((data.puntos || 0) >= 1000) {
+      await updateDoc(docRef, { puntos: data.puntos - 1000 });
+      alert("🎉 Canjeaste un 20% de descuento. Usalo en tu próxima compra!");
+    } else {
+      alert("❌ No tenés puntos suficientes.");
+    }
+  });
+
+  document.getElementById("logout").addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "login.html";
+  });
+</script>
+</body>
+ 
+  <footer class="footer">
+    <ul class="social-icon">
+        <li class="icon-elem">
+            <a href="https://www.youtube.com/watch?v=xvBxmNLLC20" class="icon">
+                <ion-icon name="logo-youtube"></ion-icon>
+            </a>
+        </li>
+         <li class="icon-elem">
+            <a href="https://www.instagram.com/gauchaburger/" class="icon">
+                <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://www.facebook.com/gauchaburgueroriginal" class="icon">
+                <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://wa.link/uqw6ld" class="icon">
+                <ion-icon name="logo-whatsapp"></ion-icon>
+            </a>
+        </li>
+    </ul>
+    <ul class="menu">
+        <li class="menu-elem">
+            <a href="index.html" class="menu-icon">Inicio</a>
+        </li>
+        <li class="menu-elem">
+            <a href="menu.html" class="menu-icon">Menu</a>
+        </li>
+        <li class="menu-elem">
+            <a href="nosotros.html" class="menu-icon">Nosotros</a>
+        </li>
+        <li class="menu-elem">
+            <a href="contacto.html" class="menu-icon">Contacto</a>
+        </li>
+    </ul>
+    <p class="text"> Año 2025  | Todos los derechos reservados</p>
+  </footer>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+
+</body>
+</html>

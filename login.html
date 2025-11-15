@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaucha Burger - Login</title>
+  <link rel="stylesheet" href="estilos.css">
+  </head>
+<body>
+<header class="nadvar">
+  <div class="logo">
+    <img src="imagenes/gaucha.png" alt="logo gaucha">
+  </div>
+  <div class="navdir">
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="menu.html">Menú</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+    <div class="menu-perfil">
+      <button class="perfil-btn">
+        <span class="icono">👤</span> Mi Perfil ▾
+      </button>
+      <div class="menu-desplegable">
+        <a href="https://wa.link/uqw6ld"><span class="icono">🎧</span> Ayuda en línea</a>
+        <a href="login.html"><span class="icono">➡️</span> Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+    <div class="container">
+    <h2 id="form-title">Iniciar Sesión 🍔</h2>
+
+    <!-- Campos adicionales solo visibles en modo registro -->
+    <div id="extra-fields" style="display: none;">
+      <input type="text" id="nombre" placeholder="Nombre" required>
+      <input type="text" id="apellido" placeholder="Apellido" required>
+      <input type="tel" id="telefono" placeholder="Teléfono" required>
+      <input type="text" id="direccion" placeholder="Dirección" required>
+      <input type="date" id="fechaNac" required>
+    </div>
+
+    <input type="email" id="email" placeholder="Correo electrónico" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+
+    <button id="btn-action">Ingresar</button>
+
+    <button class="social-btn" id="btn-google">
+      <img src="https://www.svgrepo.com/show/355037/google.svg"> Ingresar con Google
+    </button>
+   
+
+    <p class="toggle" id="toggle-form">¿No tenés cuenta? Registrate</p>
+
+    <div id="user-info"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      GoogleAuthProvider, 
+      FacebookAuthProvider, 
+      signInWithPopup, 
+      signOut,
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCuZnIyvTIvoNknjQVzHyyYWojZe3wl1F8",
+  authDomain: "gaucha-6c9c3.firebaseapp.com",
+  projectId: "gaucha-6c9c3",
+  storageBucket: "gaucha-6c9c3.firebasestorage.app",
+  messagingSenderId: "952823415131",
+  appId: "1:952823415131:web:6f470306953596af285a7e",
+  measurementId: "G-JQW163LB7S"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const formTitle = document.getElementById("form-title");
+    const btnAction = document.getElementById("btn-action");
+    const toggleForm = document.getElementById("toggle-form");
+    const extraFields = document.getElementById("extra-fields");
+    const userInfo = document.getElementById("user-info");
+    const googleBtn = document.getElementById("btn-google");
+    const fbBtn = document.getElementById("btn-facebook");
+
+    let modoRegistro = false;
+
+    // Alternar entre login y registro
+    toggleForm.addEventListener("click", () => {
+      modoRegistro = !modoRegistro;
+      formTitle.textContent = modoRegistro ? "Registrarse 🍔" : "Iniciar Sesión 🍔";
+      btnAction.textContent = modoRegistro ? "Crear cuenta" : "Ingresar";
+      toggleForm.textContent = modoRegistro ? "¿Ya tenés cuenta? Iniciá sesión" : "¿No tenés cuenta? Registrate";
+      extraFields.style.display = modoRegistro ? "block" : "none";
+    });
+
+    // Registro o login con correo
+    btnAction.addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        if (modoRegistro) {
+          const nombre = document.getElementById("nombre").value;
+          const apellido = document.getElementById("apellido").value;
+          const telefono = document.getElementById("telefono").value;
+          const direccion = document.getElementById("direccion").value;
+          const fechaNac = document.getElementById("fechaNac").value;
+
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          // Guardar datos adicionales en Firestore
+          await setDoc(doc(db, "usuarios", user.uid), {
+            nombre,
+            apellido,
+            telefono,
+            direccion,
+            fechaNac,
+            email
+          });
+
+          alert("✅ Registro exitoso. ¡Bienvenido a Gaucha Burger!");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          alert("👋 Bienvenido nuevamente a Gaucha Burger!");
+        }
+
+        window.location.href = "perfil.html";
+      } catch (error) {
+        alert("⚠️ Error: " + error.message);
+      }
+    });
+
+    // Login con Google
+    googleBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        await setDoc(doc(db, "usuarios", user.uid), {
+          nombre: user.displayName || "",
+          email: user.email,
+          telefono: "",
+          direccion: "",
+          fechaNac: ""
+        }, { merge: true });
+        window.location.href = "perfil.html";
+      } catch (error) {
+        alert("⚠️ Error con Google: " + error.message);
+      }
+    });
+
+   
+
+    // Estado de sesión
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userInfo.style.display = "block";
+        userInfo.innerHTML = `
+          Conectado como: <strong>${user.email}</strong><br>
+          <button id="btn-logout">Cerrar sesión</button>
+        `;
+        document.getElementById("btn-logout").addEventListener("click", async () => {
+          await signOut(auth);
+          alert("👋 Sesión cerrada correctamente");
+        });
+      } else {
+        userInfo.style.display = "none";
+      }
+    });
+  </script>
+<footer class="footer">
+    <ul class="social-icon">
+        <li class="icon-elem">
+            <a href="https://www.youtube.com/watch?v=xvBxmNLLC20" class="icon">
+                <ion-icon name="logo-youtube"></ion-icon>
+            </a>
+        </li>
+         <li class="icon-elem">
+            <a href="https://www.instagram.com/gauchaburger/" class="icon">
+                <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://www.facebook.com/gauchaburgueroriginal" class="icon">
+                <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+        </li>
+        <li class="icon-elem">
+            <a href="https://wa.link/uqw6ld" class="icon">
+                <ion-icon name="logo-whatsapp"></ion-icon>
+            </a>
+        </li>
+    </ul>
+    <ul class="menu">
+        <li class="menu-elem">
+            <a href="index.html" class="menu-icon">Inicio</a>
+        </li>
+        <li class="menu-elem">
+            <a href="menu.html" class="menu-icon">Menu</a>
+        </li>
+        <li class="menu-elem">
+            <a href="nosotros.html" class="menu-icon">Nosotros</a>
+        </li>
+        <li class="menu-elem">
+            <a href="contacto.html" class="menu-icon">Contacto</a>
+        </li>
+    </ul>
+    <p class="text"> Año 2025  | Todos los derechos reservados</p>
+  </footer>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>
+
